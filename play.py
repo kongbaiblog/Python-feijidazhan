@@ -512,5 +512,3 @@ while 1:
         screen.blit(GAME_OVER.exit_pic,GAME_OVER.exit_pic_rect)
     R.other_plain_kill=False
     pygame.display.update()
-#作者：空白
-#作者博客：https://kongbaiblog.github.io/KongBaiBlog/index.html
