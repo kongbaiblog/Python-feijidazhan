@@ -1,9 +1,11 @@
+#导入模块
 import pygame
 from pygame import *
 import sys,os,random,threading
 import time as tm
 from threading import *
 
+#获取文件位置
 path=os.getcwd()
 path=list(path)
 i=0
@@ -14,6 +16,7 @@ while i<len(path):
 path=''.join(path)
 print(path)
 
+#一些设置的初始值
 mouse_ctrl=False
 T_cd=0.5
 R_cd=10
@@ -22,10 +25,12 @@ my_plain_can_kill=[False,True]
 background=0
 Get_Tick=100
 
+#读取set.ini文件
 with open((path+'/set.ini'),'r',encoding='utf-8') as f:
     get_set=f.readlines()
     print(get_set)
 
+#分析set.ini中的设置
 line=0
 while True:
     if '#' in get_set[line] and line+1<len(get_set):
@@ -71,6 +76,7 @@ back_other_plain=0
 back_other_plain_two=0
 back_other_plain_three=0
 
+#各种延时的线程
 def Celled_Time():
     global back_other_plain
     tm.sleep(1)
@@ -112,7 +118,7 @@ def Can_not_kill_Time():
     global my_plain_can_kill
     my_plain_can_kill[0]=True
 
-
+#各种线程
 threading_number=0
 catch=threading.Thread(target=Celled_Time,name='T1',daemon=False)
 T2_number=0
@@ -128,6 +134,7 @@ catch_MOUSE=threading.Thread(target=MOUSE_Time,name='T5',daemon=False)
 can_not_kill_number=0
 can_not_kill=threading.Thread(target=Can_not_kill_Time,name='T6',daemon=False)
 
+#敌飞机的类（有三个敌飞机）
 class Other_plain:
     '''敌飞机'''
     other_plain=pygame.image.load(path+"/pic/otherfly.png")
@@ -147,14 +154,16 @@ class Other_plain:
     othery_three=1
     speed=[otherx,othery]
     other_two_lock=False
-    kill_lock=[False,False,False]
+    kill_lock=[False,False,False]   #三个飞机的状态
 
+#子弹的类
 class Bullet:
     '''子弹'''
     bullet=pygame.image.load(path+'/pic/bullet.png')
     bullet_rect=bullet.get_rect()
     speed=[0,-1]
 
+#三个技能的类
 class R:
     '''R技能'''
     other_plain_kill=False
@@ -182,6 +191,7 @@ class MOUSEL:
     MOUSE_pic_rect.x=500
     MOUSE_pic_rect.y=900
 
+#游戏结束显示的两个选项
 class GAME_OVER:
     '''游戏结束'''
     regame_pic=pygame.image.load(path+'/pic/regame.png')
@@ -193,12 +203,14 @@ class GAME_OVER:
     exit_pic_rect.x=100
     exit_pic_rect.y=430
 
+#pygame初始化
 pygame.init()
 size=width,heigh=800,1000
 screen=pygame.display.set_mode(size)
 color=(0,0,0)
 pygame.display.set_caption('飞机大战')
 
+#玩家飞机的设置
 my_plain=pygame.image.load(path+"/pic/myfly.png")   #  68*48
 my_plain_rect=my_plain.get_rect()
 my_plain_rect.x=200
@@ -219,6 +231,7 @@ bullet=Bullet()
 
 while 1:
     speed=[0,0]
+    #当玩家阵亡。敌飞机停止运动
     if my_plain_how==True:
         speed_other=[other.otherx,other.othery]
         speed_other_two=[other.otherx_t,other.othery_t]
@@ -227,9 +240,12 @@ while 1:
         speed_other=[0,0]
         speed_other_two=[0,0]
         speed_other_three=[0,0]
+
+    #键盘事件
     for event in pygame.event.get():
 
         key_pressed=pygame.key.get_pressed()
+        #方向移动
         if my_plain_how==True:
             if key_pressed[K_w]:
                 speed[1]-=speedn
@@ -244,9 +260,11 @@ while 1:
             if key_pressed[K_d]:
                 speed[0]+=speedn
                 E.last_key='d'
+            #子弹射出
             if key_pressed[K_SPACE] and biu!=2:
                 #print('biu~')
                 biu=1
+            #玩家转向
             if key_pressed[K_LCTRL] and key_pressed[K_p]:
                 print('己方飞机坐标:',my_plain_rect.x,',',my_plain_rect.y)
                 print('\n敌方飞机:',other.other_plain_rect.x,',',other.other_plain_rect.y)
@@ -262,6 +280,7 @@ while 1:
             if key_pressed[K_LSHIFT] and key_pressed[K_d]:
                 my_plain=pygame.image.load(path+'/pic/myflyR.png')
                 last_key='d'
+            #R技能
             if key_pressed[K_r] and R.R_lock==False:
                 R.other_plain_kill=True
                 try:
@@ -271,6 +290,7 @@ while 1:
                     catch_R=threading.Thread(target=R_Time,name='T3',daemon=False)
                     catch_R.start()
                     R_number+=1
+            #T技能
             if key_pressed[K_t] and E.E_lock==False and mouse_ctrl!=1:
                 if E.last_key=='d':
                     my_plain_rect.x+=E.E_move
@@ -301,6 +321,7 @@ while 1:
             print("QUIT")
             pygame.quit()
             sys.exit()
+        #鼠标左键技能
         if event.type==pygame.MOUSEBUTTONDOWN and mouse_ctrl==False and MOUSEL.MOUSE_lock==False and my_plain_how==True:
             go_to=pygame.mouse.get_pos()
             my_plain_rect.x=go_to[0]
@@ -313,6 +334,7 @@ while 1:
                 catch_MOUSE=threading.Thread(target=MOUSE_Time,name='T5',daemon=False)
                 catch_MOUSE.start()
                 MOUSE_number+=1
+        #玩家阵亡后画面判定
         if event.type==pygame.MOUSEBUTTONDOWN and my_plain_how==False:
             if 100<=pygame.mouse.get_pos()[0]<=730:  #x:100,730   y:200,380 #x:100,730   y:430,610
                 if 200<=pygame.mouse.get_pos()[1]<=380:
@@ -328,6 +350,7 @@ while 1:
 
     clock.tick(Get_Tick)
 
+    #防止玩家出地图
     if my_plain_rect.right>width:
         speed[0]=-1
     if my_plain_rect.left<0:
@@ -337,6 +360,7 @@ while 1:
     if my_plain_rect.top<0:
         speed[1]=1
 
+    #敌飞机出地图后重置
     if (other.other_plain_rect.y>heigh):
         other.other_plain_rect.y=1
         other.other_plain_rect.x=random.randint(0,650)
@@ -348,10 +372,12 @@ while 1:
         other.other_plain_three_rect.x=random.randint(0,650)
     #print(other.other_plain_rect.y)
 
+    #确定子弹位置
     if biu==1:
         bullet.bullet_rect.x=my_plain_rect.x
         bullet.bullet_rect.y=my_plain_rect.y
         biu=2
+    #子弹移动
     if biu==2:
         if last_key=='w':
             bullet.speed[1]-=1
@@ -362,7 +388,7 @@ while 1:
         if last_key=='d':
             bullet.speed[0]+=1
 
-
+    #子弹出图重置
     if bullet.bullet_rect.y<0 or bullet.bullet_rect.y>heigh or bullet.bullet_rect.x<0 or bullet.bullet_rect.x>width:
         bullet.bullet_rect.x=-10
         bullet.bullet_rect.y=-10
@@ -374,7 +400,7 @@ while 1:
         bullet.bullet_rect.x=my_plain_rect.x
         bullet.bullet_rect.y=my_plain_rect.y-10
 
-
+    #敌飞机死亡判定和重置
     if back_other_plain==1:
         #print("change")
         other.other_plain=pygame.image.load(path+'/pic/otherfly.png')
@@ -447,7 +473,8 @@ while 1:
             T7_number+=1
             catch_T7=threading.Thread(target=Celled_Time_T7,name='T7'+str(T7_number),daemon=False)
             catch_T7.start()
-    
+
+    #玩家死亡判定
     if ((other.other_plain_rect.y-40)<=my_plain_rect.y<=(other.other_plain_rect.y+40) or (other.other_plain_two_rect.y-40)<=my_plain_rect.y<=(other.other_plain_two_rect.y+40) or (other.other_plain_three_rect.y-40)<=my_plain_rect.y<=(other.other_plain_three_rect.y+40)) and my_plain_can_kill==[True,True]:
        # print('敌飞机1:',other.other_plain_rect.x,',',other.other_plain_rect.y,'\n','敌飞机2:',other.other_plain_two_rect.x,',',other.other_plain_two_rect.y,'\n','我方飞机:',my_plain_rect.x,',',my_plain_rect.y)
         my_plain=pygame.image.load(path+'/pic/myflyboom.png')
@@ -458,6 +485,7 @@ while 1:
             print('————————————————分数为:',point,'————————————————')
             point_output+=1
 
+    #鼠标操作模式
     if mouse_ctrl==True and my_plain_how==True:
         go_to=pygame.mouse.get_pos()
         my_plain_rect.x=go_to[0]
@@ -484,3 +512,5 @@ while 1:
         screen.blit(GAME_OVER.exit_pic,GAME_OVER.exit_pic_rect)
     R.other_plain_kill=False
     pygame.display.update()
+#作者：空白
+#作者博客：https://kongbaiblog.github.io/KongBaiBlog/index.html
