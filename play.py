@@ -318,9 +318,9 @@ while 1:
                 if 200<=pygame.mouse.get_pos()[1]<=380:
                     print('游戏重启中...')
                     try:
-                        os.system('start '+path+'/play.exe')
-                    except:
                         os.system('start '+path+'/play.py')
+                    except:
+                        os.system('start '+path+'/play.exe')
                     exit()
                 if 430<=pygame.mouse.get_pos()[1]<=610:
                     print('退出中...')
